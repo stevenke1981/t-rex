@@ -10,26 +10,31 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace Dinosaug
+namespace TRexForest
 {
     public static class ForestRender
     {
-        private const string DinosaurFbx = "Assets/Source/Dinosaur/Stegosaur.fbx";
+        private const string DinosaurFbx = "Assets/Source/Dinosaur/TRex.fbx";
         private const string ReportFile = "render-report.json";
         private const float ShotSeconds = 2.5f;
-        private const float WalkStart = -7.2f;
-        private const float RunStart = -4.7f;
-        private const float StopPosition = 2.2f;
+        // Camera framing and travel distances were authored for a 6.5 m reference character and scale with the T-Rex length.
+        // Retune here (or ForestSceneBuilder.CharacterLength) to change every character-relative distance at once.
+        private const float ReferenceCharacterLength = 6.5f;
+        private const float CharacterScale = ForestSceneBuilder.CharacterLength / ReferenceCharacterLength;
+        private const float WalkStart = -7.2f * CharacterScale;
+        private const float RunStart = -4.7f * CharacterScale;
+        private const float StopPosition = 2.2f * CharacterScale;
+        private const float OrbitRadius = 1.65f * CharacterScale;
 
-        private static readonly string[] ShotNames = { "Walk", "Run", "HeadShake", "Roar_Pose", "Orbit" };
+        private static readonly string[] ShotNames = { "Walk", "Run", "HeadShake", "Roar", "Orbit" };
 
-        [MenuItem("Dinosaug/Render Forest Film")]
+        [MenuItem("TRex/Render Forest Film")]
         public static void RenderFromMenu()
         {
             Capture(NewOutputDirectory(), 1280, 720, 24, false);
         }
 
-        [MenuItem("Dinosaug/Render Forest Smoke Test")]
+        [MenuItem("TRex/Render Forest Smoke Test")]
         public static void SmokeFromMenu()
         {
             Capture(NewOutputDirectory(), 1280, 720, 24, true);
@@ -73,21 +78,22 @@ namespace Dinosaug
                 scene = SceneManager.GetActiveScene();
             }
 
-            GameObject anchor = scene.GetRootGameObjects().SingleOrDefault(root => root.name == "Stegosaur");
+            GameObject anchor = scene.GetRootGameObjects().SingleOrDefault(root => root.name == "TRex");
             Camera sceneCamera = Camera.main;
             if (anchor == null || anchor.transform.childCount != 1 ||
                 sceneCamera == null || sceneCamera.gameObject.scene != scene)
-                throw new InvalidOperationException("The forest needs the Stegosaur anchor, its rig child, and a MainCamera in the active scene.");
+                throw new InvalidOperationException("The forest needs the TRex anchor, its rig child, and a MainCamera in the active scene.");
 
             Transform subject = anchor.transform;
             GameObject model = subject.GetChild(0).gameObject;
             SkinnedMeshRenderer[] pieces = model.GetComponentsInChildren<SkinnedMeshRenderer>();
             if (pieces.Length == 0)
-                throw new InvalidOperationException("The assembled Stegosaur has no visible skinned mesh parts.");
+                throw new InvalidOperationException("The assembled T-Rex has no visible skinned mesh parts.");
             Transform[] skeleton = model.GetComponentsInChildren<Transform>(true);
-            Transform face = skeleton.Single(node => node.name == "Bone_023");
-            Transform head = skeleton.Single(node => node.name == "Bone_024");
-            Transform leg = skeleton.Single(node => node.name == "Bone_029");
+            Transform face = FindBone(skeleton, "Neck2");
+            Transform head = FindBone(skeleton, "Head");
+            Transform jaw = FindBone(skeleton, "Jaw");
+            Transform leg = FindBone(skeleton, "Thigh_L");
 
             Bounds bounds = pieces[0].bounds;
             foreach (SkinnedMeshRenderer piece in pieces.Skip(1))
@@ -146,7 +152,7 @@ namespace Dinosaug
                         rest.Restore();
 
                     AnimationClip clip = clips[shot == 4 ? 0 : shot];
-                    Transform drivenBone = (shot == 2 || shot == 3) ? head : leg;
+                    Transform drivenBone = shot switch { 2 => head, 3 => jaw, _ => leg };
                     float rotation = VerifyBoneMotion(model, clip, drivenBone);
                     var detail = new ShotReport
                     {
@@ -165,7 +171,7 @@ namespace Dinosaug
                     foreach (int frame in sampleFrames)
                     {
                         if (!Application.isBatchMode && EditorUtility.DisplayCancelableProgressBar(
-                                "Rendering Stegosaur Forest", $"{detail.name}  {outputFrame + 1}/{totalFrames}",
+                                "Rendering T-Rex Forest", $"{detail.name}  {outputFrame + 1}/{totalFrames}",
                                 outputFrame / (float)totalFrames))
                             throw new OperationCanceledException("Forest capture was canceled. Partial frames were kept.");
 
@@ -198,12 +204,12 @@ namespace Dinosaug
 
                     detail.frameCount = outputFrame - detail.firstFrame;
                     report.shots[shot] = detail;
-                    Debug.Log($"[Dinosaug] {detail.name}: {detail.frameCount} frames, {detail.measuredBone} moved {rotation:F2}°.");
+                    Debug.Log($"[TRexForest] {detail.name}: {detail.frameCount} frames, {detail.measuredBone} moved {rotation:F2}°.");
                 }
 
                 report.frameCount = outputFrame;
                 File.WriteAllText(reportPath, JsonUtility.ToJson(report, true) + Environment.NewLine);
-                Debug.Log($"[Dinosaug] Captured {outputFrame} frames to {outputPath}");
+                Debug.Log($"[TRexForest] Captured {outputFrame} frames to {outputPath}");
             }
             finally
             {
@@ -241,7 +247,7 @@ namespace Dinosaug
                 case 4:
                     float arc = 1.16f * progress;
                     yaw = -arc * Mathf.Rad2Deg;
-                    offset = new Vector3(-1.65f * (1f - Mathf.Cos(arc)), 0f, StopPosition + 1.65f * Mathf.Sin(arc));
+                    offset = new Vector3(-OrbitRadius * (1f - Mathf.Cos(arc)), 0f, StopPosition + OrbitRadius * Mathf.Sin(arc));
                     break;
                 default:
                     offset = new Vector3(0f, 0f, StopPosition);
@@ -256,41 +262,49 @@ namespace Dinosaug
             switch (shot)
             {
                 case 0:
-                    position = subject.position + new Vector3(Mathf.Lerp(-4.0f, -3.65f, curve),
-                        Mathf.Lerp(1.55f, 1.8f, curve), Mathf.Lerp(1.7f, 2.35f, curve));
-                    focus += subject.forward * 0.62f + Vector3.down * 0.38f;
+                    position = subject.position + Scaled(new Vector3(Mathf.Lerp(-4.0f, -3.65f, curve),
+                        Mathf.Lerp(1.55f, 1.8f, curve), Mathf.Lerp(1.7f, 2.35f, curve)));
+                    focus += Scaled(subject.forward * 0.62f + Vector3.down * 0.38f);
                     fieldOfView = 58f;
                     break;
                 case 1:
-                    position = subject.position + new Vector3(4.18f, Mathf.Lerp(0.86f, 1.13f, curve),
-                        Mathf.Lerp(-0.85f, 1.05f, curve));
-                    focus += Vector3.down * 0.18f + subject.forward * Mathf.Lerp(-0.20f, 0.50f, curve);
+                    position = subject.position + Scaled(new Vector3(4.18f, Mathf.Lerp(0.86f, 1.13f, curve),
+                        Mathf.Lerp(-0.85f, 1.05f, curve)));
+                    focus += Scaled(Vector3.down * 0.18f + subject.forward * Mathf.Lerp(-0.20f, 0.50f, curve));
                     fieldOfView = 59f;
                     break;
                 case 2:
-                    position = subject.position + new Vector3(Mathf.Lerp(-3.0f, -2.55f, curve),
-                        Mathf.Lerp(1.86f, 1.74f, curve), 4.88f);
-                    focus = face.position + Vector3.up * 0.13f;
+                    position = subject.position + Scaled(new Vector3(Mathf.Lerp(-3.0f, -2.55f, curve),
+                        Mathf.Lerp(1.86f, 1.74f, curve), 4.88f));
+                    focus = face.position + Scaled(Vector3.up * 0.13f);
                     fieldOfView = 32f;
                     break;
                 case 3:
-                    position = subject.position + new Vector3(Mathf.Lerp(3.1f, 2.72f, curve),
-                        Mathf.Lerp(1.1f, 1.43f, curve), Mathf.Lerp(5.2f, 4.95f, curve));
-                    focus = face.position + Vector3.up * 0.15f;
+                    position = subject.position + Scaled(new Vector3(Mathf.Lerp(3.1f, 2.72f, curve),
+                        Mathf.Lerp(1.1f, 1.43f, curve), Mathf.Lerp(5.2f, 4.95f, curve)));
+                    focus = face.position + Scaled(Vector3.up * 0.15f);
                     fieldOfView = 36f;
                     break;
                 default:
                     float angle = Mathf.Lerp(57f, 168f, curve) * Mathf.Deg2Rad;
-                    position = new Vector3(origin.x + 4.12f * Mathf.Sin(angle),
-                        subject.position.y + Mathf.Lerp(2.38f, 2.65f, curve),
-                        subject.position.z + 5.7f * Mathf.Cos(angle));
-                    focus += Vector3.down * 0.25f;
+                    position = new Vector3(origin.x + 4.12f * CharacterScale * Mathf.Sin(angle),
+                        subject.position.y + Mathf.Lerp(2.38f, 2.65f, curve) * CharacterScale,
+                        subject.position.z + 5.7f * CharacterScale * Mathf.Cos(angle));
+                    focus += Scaled(Vector3.down * 0.25f);
                     fieldOfView = 61f;
                     break;
             }
 
             camera.fieldOfView = fieldOfView;
             camera.transform.SetPositionAndRotation(position, Quaternion.LookRotation(focus - position, Vector3.up));
+        }
+
+        private static Vector3 Scaled(Vector3 offset) => offset * CharacterScale;
+
+        private static Transform FindBone(Transform[] nodes, string name)
+        {
+            // The skinned mesh parts reuse part names such as "Head", so bones are the transforms without a renderer.
+            return nodes.Single(node => node.name == name && !node.GetComponent<Renderer>());
         }
 
         private static float VerifyBoneMotion(GameObject model, AnimationClip clip, Transform bone)

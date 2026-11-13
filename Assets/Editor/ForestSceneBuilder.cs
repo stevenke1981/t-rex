@@ -8,15 +8,17 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
-namespace Dinosaug
+namespace TRexForest
 {
     public static class ForestSceneBuilder
     {
-        public const string ScenePath = "Assets/Scenes/StegosaurForest.unity";
+        public const string ScenePath = "Assets/Scenes/TRexForest.unity";
         private const string ManifestPath = "Assets/Source/asset-manifest.json";
         private const string Generated = "Assets/Generated";
         private const float GroundExtent = 48f;
-        private const float CharacterLength = 6.5f;
+        // Body length in metres of the rigged T-Rex after import. Read by ForestRender for camera scaling.
+        internal const float CharacterLength = 9f;
+        private const int MinimumSkinnedParts = 13;
         private static readonly string[] ShrubIds =
             { "shrub_02_a", "shrub_02_b", "shrub_03_a", "shrub_03_b" };
 
@@ -49,7 +51,7 @@ namespace Dinosaug
             public float normalScale = 1f;
         }
 
-        [MenuItem("Dinosaug/Build Forest Scene")]
+        [MenuItem("TRex/Build Forest Scene")]
         public static void Build()
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -73,8 +75,8 @@ namespace Dinosaug
             BuildGround(manifest.ground, environment);
             PopulateForest(environment, prefabs);
 
-            var dinosaur = (GameObject)PrefabUtility.InstantiatePrefab(prefabs["stegosaur"], scene);
-            dinosaur.name = "Stegosaur";
+            var dinosaur = (GameObject)PrefabUtility.InstantiatePrefab(prefabs["trex"], scene);
+            dinosaur.name = "TRex";
             dinosaur.transform.position = new Vector3(0f, 0f, -2.1f);
             PrefabUtility.RecordPrefabInstancePropertyModifications(dinosaur.transform);
 
@@ -95,8 +97,8 @@ namespace Dinosaug
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
                 throw new IOException($"Could not save {ScenePath}.");
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Dinosaug] Built {ScenePath}; {prefabs.Count} independent model prefabs. " +
-                      $"Stegosaur has {dinosaur.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length} skinned parts.");
+            Debug.Log($"[TRexForest] Built {ScenePath}; {prefabs.Count} independent model prefabs. " +
+                      $"TRex has {dinosaur.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length} skinned parts.");
         }
 
         private static GameObject BuildModelPrefab(ModelSource model)
@@ -105,7 +107,7 @@ namespace Dinosaug
             if (importer == null || model.materials == null || model.materials.Length == 0)
                 throw new InvalidDataException($"Missing FBX importer or material slots for {model.id} ({model.fbx}).");
 
-            bool character = model.id == "stegosaur";
+            bool character = model.id == "trex";
             importer.animationType = character ? ModelImporterAnimationType.Generic : ModelImporterAnimationType.None;
             importer.importAnimation = character;
             if (character)
@@ -134,7 +136,7 @@ namespace Dinosaug
             }
 
             importer.SaveAndReimport();
-            var prefabRoot = new GameObject(character ? "Stegosaur" : model.id);
+            var prefabRoot = new GameObject(character ? "TRex" : model.id);
             var modelObject = (GameObject)PrefabUtility.InstantiatePrefab(RequireAsset<GameObject>(model.fbx));
             try
             {
@@ -159,7 +161,7 @@ namespace Dinosaug
                 if (character)
                 {
                     var parts = modelObject.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-                    if (parts.Length < 7 || parts.Select(part => part.sharedMesh).Distinct().Count() != parts.Length
+                    if (parts.Length < MinimumSkinnedParts || parts.Select(part => part.sharedMesh).Distinct().Count() != parts.Length
                         || parts.Any(part => part.sharedMesh == null || part.bones.Length == 0
                             || part.bones.Any(bone => !bone || !bone.IsChildOf(modelObject.transform))))
                         throw new InvalidDataException($"{model.fbx} needs separate skinned parts on its imported rig.");
@@ -170,9 +172,8 @@ namespace Dinosaug
                         PrefabUtility.RecordPrefabInstancePropertyModifications(part);
                     }
 
-                    var head = parts.FirstOrDefault(part =>
-                        part.name.IndexOf("HeadNeck", StringComparison.OrdinalIgnoreCase) >= 0);
-                    var tail = parts.FirstOrDefault(part => part.name.EndsWith("Tail", StringComparison.OrdinalIgnoreCase));
+                    var head = parts.FirstOrDefault(part => part.name == "Head");
+                    var tail = parts.FirstOrDefault(part => part.name == "Tail");
                     float yaw = model.yawDegrees;
                     if (head && tail)
                     {

@@ -51,7 +51,7 @@ $frames = Join-Path $output 'frames'
 $unityArguments = @(
     '-batchmode', '-quit', '-force-d3d11',
     '-projectPath', ('"{0}"' -f $project),
-    '-executeMethod', 'Dinosaug.ForestRender.RenderBatch',
+    '-executeMethod', 'TRexForest.ForestRender.RenderBatch',
     '-logFile', ('"{0}"' -f $log),
     '-forest-output', ('"{0}"' -f $output),
     '-forest-width', $Width.ToString([Globalization.CultureInfo]::InvariantCulture),
@@ -100,7 +100,7 @@ if (-not (Test-Path -LiteralPath $ffprobe -PathType Leaf)) {
     $probeCommand = Get-Command -Name 'ffprobe.exe' -CommandType Application -ErrorAction SilentlyContinue
     $ffprobe = $probeCommand.Source
 }
-$video = Join-Path $output 'stegosaur-forest-unity.mp4'
+$video = Join-Path $output 'trex-forest-unity.mp4'
 $framePattern = Join-Path $frames 'frame_%05d.png'
 $encodeArguments = @(
     '-hide_banner', '-loglevel', 'error', '-xerror', '-n',
