@@ -21,9 +21,13 @@ namespace TRexForest
         // Retune here (or ForestSceneBuilder.CharacterLength) to change every character-relative distance at once.
         private const float ReferenceCharacterLength = 6.5f;
         private const float CharacterScale = ForestSceneBuilder.CharacterLength / ReferenceCharacterLength;
-        private const float WalkStart = -7.2f * CharacterScale;
+        // Ground speeds of the in-place Walk/Run cycles in Unity metres per second: Blender gait speed
+        // (Evidence/trex-asset-check.json) x imported scale (9 m / 13.72 m). Anchor travel matches them so feet do not slide.
+        private const float WalkGroundSpeed = 1.06f;
+        private const float RunGroundSpeed = 3.90f;
         private const float RunStart = -4.7f * CharacterScale;
-        private const float StopPosition = 2.2f * CharacterScale;
+        private const float WalkStart = RunStart - WalkGroundSpeed * ShotSeconds;
+        private const float StopPosition = RunStart + RunGroundSpeed * ShotSeconds;
         private const float OrbitRadius = 1.65f * CharacterScale;
 
         private static readonly string[] ShotNames = { "Walk", "Run", "HeadShake", "Roar", "Orbit" };
@@ -90,7 +94,7 @@ namespace TRexForest
             if (pieces.Length == 0)
                 throw new InvalidOperationException("The assembled T-Rex has no visible skinned mesh parts.");
             Transform[] skeleton = model.GetComponentsInChildren<Transform>(true);
-            Transform face = FindBone(skeleton, "Neck2");
+            Transform face = FindBone(skeleton, "Head"); // camera focus for close-ups: back of the skull
             Transform head = FindBone(skeleton, "Head");
             Transform jaw = FindBone(skeleton, "Jaw");
             Transform leg = FindBone(skeleton, "Thigh_L");
@@ -103,6 +107,7 @@ namespace TRexForest
             TransformPose[] rigPose = skeleton.Select(node => new TransformPose(node)).ToArray();
             TransformPose modelPose = new TransformPose(model.transform);
             bool[] updateWhenOffscreen = pieces.Select(piece => piece.updateWhenOffscreen).ToArray();
+            bool[] recalculatePerRender = pieces.Select(piece => piece.forceMatrixRecalculationPerRender).ToArray();
 
             AnimationClip[] imported = AssetDatabase.LoadAllAssetRepresentationsAtPath(DinosaurFbx).OfType<AnimationClip>().ToArray();
             AnimationClip[] clips = ShotNames.Take(4).Select(name => FindClip(imported, name)).ToArray();
@@ -130,7 +135,11 @@ namespace TRexForest
             try
             {
                 foreach (SkinnedMeshRenderer piece in pieces)
+                {
                     piece.updateWhenOffscreen = true;
+                    // Unity 6.4 batch capture does not re-skin after SampleAnimation unless forced per render.
+                    piece.forceMatrixRecalculationPerRender = true;
+                }
 
                 cameraObject = new GameObject("Forest Capture Camera") { hideFlags = HideFlags.HideAndDontSave };
                 Camera camera = cameraObject.AddComponent<Camera>();
@@ -179,7 +188,7 @@ namespace TRexForest
                         float seconds = frame / (float)fps;
                         float poseTime = (shot == 2 || shot == 3)
                             ? clip.length * progress
-                            : Mathf.Repeat(seconds * (shot == 4 ? 0.75f : 1f), clip.length);
+                            : Mathf.Repeat(seconds, clip.length);
                         clip.SampleAnimation(model, poseTime);
                         modelPose.Restore();
                         ComposeShot(shot, progress, subject, anchorPose.LocalPosition, center, face, camera);
@@ -224,7 +233,10 @@ namespace TRexForest
                     rest.Restore();
                 anchorPose.Restore();
                 for (int i = 0; i < pieces.Length; i++)
+                {
                     pieces[i].updateWhenOffscreen = updateWhenOffscreen[i];
+                    pieces[i].forceMatrixRecalculationPerRender = recalculatePerRender[i];
+                }
                 if (!Application.isBatchMode)
                     EditorUtility.ClearProgressBar();
             }
@@ -263,13 +275,14 @@ namespace TRexForest
             {
                 case 0:
                     position = subject.position + Scaled(new Vector3(Mathf.Lerp(-4.0f, -3.65f, curve),
-                        Mathf.Lerp(1.55f, 1.8f, curve), Mathf.Lerp(1.7f, 2.35f, curve)));
-                    focus += Scaled(subject.forward * 0.62f + Vector3.down * 0.38f);
-                    fieldOfView = 58f;
+                        Mathf.Lerp(1.75f, 1.95f, curve), Mathf.Lerp(1.7f, 2.35f, curve)));
+                    focus += Scaled(subject.forward * 0.45f + Vector3.up * 0.22f);
+                    fieldOfView = 60f;
                     break;
                 case 1:
-                    position = subject.position + Scaled(new Vector3(4.18f, Mathf.Lerp(0.86f, 1.13f, curve),
-                        Mathf.Lerp(-0.85f, 1.05f, curve)));
+                    // Lateral distance stays unscaled so the camera keeps clear of the roadside shrubs (x >= 5.3).
+                    position = subject.position + new Vector3(4.6f, Mathf.Lerp(0.86f, 1.13f, curve) * CharacterScale,
+                        Mathf.Lerp(-0.85f, 1.05f, curve) * CharacterScale);
                     focus += Scaled(Vector3.down * 0.18f + subject.forward * Mathf.Lerp(-0.20f, 0.50f, curve));
                     fieldOfView = 59f;
                     break;

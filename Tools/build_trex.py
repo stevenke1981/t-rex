@@ -55,6 +55,7 @@ def export_fbx(rig, parts):
         secondary_bone_axis="X", bake_anim=True, bake_anim_use_all_bones=True,
         bake_anim_use_all_actions=True, bake_anim_use_nla_strips=False,
         bake_anim_force_startend_keying=True, bake_anim_simplify_factor=0.0,
+        bake_anim_step=1.0 / anim.BAKE_SUBSTEPS,
         path_mode="STRIP", embed_textures=False)
     if result != {"FINISHED"} or not FBX.is_file():
         raise RuntimeError("FBX export failed")

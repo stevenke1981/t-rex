@@ -1,0 +1,117 @@
+{
+  "recordedAt": "2026-11-13T21:56:34.1023134+08:00",
+  "scope": "User-confirmed animation fixes and video re-render",
+  "environment": {
+    "unity": "6000.4.11f1",
+    "blender": "5.2.3 LTS",
+    "graphicsDevice": "NVIDIA GeForce RTX 3060 Ti",
+    "graphicsApi": "Direct3D11",
+    "colorSpace": "Gamma"
+  },
+  "codeSha256": {
+    "Tools/trex/anim.py": "9ea773f98aac70f8e4b5bc3b8100e06085770308069799e8db91d9fa0e30ea27",
+    "Tools/build_trex.py": "f776d894dae59cf8a040ad2e6e908116a9e646cf4edb8bade9c287728a1eda4b",
+    "Tools/test_trex_motion.py": "143602a83ebd9c39141e763395de78ed20122ca770d4669429961aa3e9d9f1d8",
+    "Assets/Editor/ForestRender.cs": "b8a38016c01b7c4e5e5175052c95f32deb0aa278629bb1a5c666eaa27a6e2b1d",
+    "Assets/Editor/ForestSceneBuilder.cs": "89afb5633692b279a5552a52bc46577fd1a3ffc3c3814ebba5315270145aad8a"
+  },
+  "baseline": {
+    "backup": "Render/p2-20261113-213949/baseline",
+    "motion": {
+      "restMeshGroundMetres": -0.016549531370401382,
+      "gaits": {
+        "Walk": {
+          "minMeshHeightMetres": -0.1915542334318161,
+          "minRelativeToRestGroundMetres": -0.17500470206141472,
+          "minToeBoneTipMetres": -0.03670579195022583,
+          "worstTimeSeconds": 1.4375,
+          "maxLeftRightArmDifferenceDegrees": 0.0
+        },
+        "Run": {
+          "minMeshHeightMetres": -0.04848458990454674,
+          "minRelativeToRestGroundMetres": -0.031935058534145355,
+          "minToeBoneTipMetres": 0.05703376233577728,
+          "worstTimeSeconds": 0.46875,
+          "maxLeftRightArmDifferenceDegrees": 0.0
+        }
+      }
+    }
+  },
+  "checks": {
+    "blenderMotionTests": {
+      "status": "PASS",
+      "testCount": 5,
+      "command": "blender -b --factory-startup --python-exit-code 1 --python Tools/test_trex_motion.py",
+      "log": "Render/p2-20261113-213949/tests-green.log",
+      "originalFailureLog": "Render/p2-20261113-213949/tests-red.log",
+      "bakedFailureLog": "Render/p2-20261113-213949/tests-baked-red.log"
+    },
+    "seamNegativeControl": {
+      "status": "PASS",
+      "injectedRootJumpMetres": 0.1,
+      "log": "Render/p2-20261113-213949/seam-negative-control.log"
+    },
+    "fbxRoundTrip": {
+      "status": "PASS",
+      "evidence": "Evidence/trex-motion-check.json",
+      "command": "blender -b --factory-startup --python-exit-code 1 --python Render/p2-20261113-213949/check-exported-motion.py",
+      "fbxSha256": "4a1be6e2717a8275bb06428c145c8d6be4de43c19da5007621cacab1754dc2cc",
+      "parts": 13,
+      "bones": 29,
+      "clips": 4,
+      "sceneFrameRate": 24,
+      "bakedSamplesPerSecond": 192,
+      "motionMeasurementSamplesPerSecond": 96
+    },
+    "unitySmoke": {
+      "status": "PASS",
+      "frames": 15,
+      "report": "Render/p2-20261113-213949/smoke-final/render-report.json"
+    },
+    "unityFilm": {
+      "status": "PASS",
+      "frames": 300,
+      "report": "Evidence/render-report.json",
+      "rawOutput": "Render/p2-20261113-213949/full-final"
+    },
+    "videoDecodeAndStream": {
+      "status": "PASS",
+      "evidence": "Evidence/video-verification.json",
+      "sha256": "1da348f619dab975df50df2a878244e164977a2cba281e14f4055ddb857884db",
+      "stream": {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "avg_frame_rate": "24/1",
+        "duration": "12.500000",
+        "nb_read_frames": "300"
+      }
+    },
+    "visualSampling": {
+      "status": "PASS",
+      "samples": 15,
+      "method": "Agent inspected first/middle/last decoded frames of each shot",
+      "evidence": "Evidence/shot-contact.jpg"
+    },
+    "independentReview": {
+      "status": "PASS",
+      "productionAgentRole": "python-reviewer",
+      "testAgentRole": "code-reviewer",
+      "model": "gpt-6.1-terra",
+      "resolvedFinding": "Seam regression now checks the pre-wrap pose and rejects an injected 10 cm jump",
+      "openFindings": 0
+    },
+    "continuousPlayback": {
+      "status": "NOT_RUN",
+      "reason": "Decoded all frames and inspected samples; full continuous playback was not performed"
+    },
+    "remoteCI": {
+      "status": "NOT_RUN",
+      "reason": "No GitHub Actions workflow configured"
+    }
+  },
+  "originalStagedPathsPreserved": true,
+  "stagedPathCount": 126,
+  "commitOrPushPerformed": false
+}
