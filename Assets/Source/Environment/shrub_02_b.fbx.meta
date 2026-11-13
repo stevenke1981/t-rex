@@ -1,20 +1,19 @@
 fileFormatVersion: 2
 guid: c64d140b15d73a04cbf7178bb6c85a5a
 ModelImporter:
-  serializedVersion: 24300
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: shrub_02
-    second: {fileID: 2100000, guid: 88f7000ea831f1d42849d8220dc2318a, type: 2}
+    second: {fileID: 2100000, guid: f0863324fb6ec2d46aace06962145c92, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

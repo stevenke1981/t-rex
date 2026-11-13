@@ -1,20 +1,19 @@
 fileFormatVersion: 2
 guid: 4e6eaa80ac0f24042a1ef8b40694dc8c
 ModelImporter:
-  serializedVersion: 24300
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: shrub_sorrel_01
-    second: {fileID: 2100000, guid: 19fad7a638281b1469e6b42940fe023e, type: 2}
+    second: {fileID: 2100000, guid: c0ebf8c617269924c8427bec3363eda1, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

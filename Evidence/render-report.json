@@ -1,0 +1,178 @@
+{
+    "unityVersion": "6000.4.11f1",
+    "graphicsDevice": "NVIDIA GeForce RTX 3060 Ti",
+    "graphicsApi": "Direct3D11",
+    "colorSpace": "Gamma",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameCount": 300,
+    "smoke": false,
+    "skinnedParts": [
+        "Body",
+        "Head",
+        "LeftArm",
+        "LeftEye",
+        "LeftLeg",
+        "LowerJaw",
+        "LowerTeeth",
+        "RightArm",
+        "RightEye",
+        "RightLeg",
+        "Tail",
+        "Tongue",
+        "UpperTeeth"
+    ],
+    "shots": [
+        {
+            "name": "Walk",
+            "clip": "TRexArmature|Walk",
+            "measuredBone": "Thigh_L",
+            "clipSeconds": 2.0,
+            "boneRotationDegrees": 69.64128875732422,
+            "firstFrame": 0,
+            "frameCount": 60,
+            "sourceFrames": 60,
+            "anchorStart": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -11.257692337036133
+            },
+            "anchorEnd": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -8.60769271850586
+            },
+            "cameraStart": {
+                "x": -5.538461685180664,
+                "y": 2.42307710647583,
+                "z": -8.90384578704834
+            },
+            "cameraEnd": {
+                "x": -5.05384635925293,
+                "y": 2.700000047683716,
+                "z": -5.353846549987793
+            }
+        },
+        {
+            "name": "Run",
+            "clip": "TRexArmature|Run",
+            "measuredBone": "Thigh_L",
+            "clipSeconds": 1.0,
+            "boneRotationDegrees": 65.6416015625,
+            "firstFrame": 60,
+            "frameCount": 60,
+            "sourceFrames": 60,
+            "anchorStart": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -8.60769271850586
+            },
+            "anchorEnd": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.1423077583312989
+            },
+            "cameraStart": {
+                "x": 4.599999904632568,
+                "y": 1.1907693147659302,
+                "z": -9.784615516662598
+            },
+            "cameraEnd": {
+                "x": 4.599999904632568,
+                "y": 1.5646153688430787,
+                "z": 2.596153736114502
+            }
+        },
+        {
+            "name": "HeadShake",
+            "clip": "TRexArmature|HeadShake",
+            "measuredBone": "Head",
+            "clipSeconds": 2.5,
+            "boneRotationDegrees": 11.780583381652832,
+            "firstFrame": 120,
+            "frameCount": 60,
+            "sourceFrames": 60,
+            "anchorStart": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.1423077583312989
+            },
+            "anchorEnd": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.1423077583312989
+            },
+            "cameraStart": {
+                "x": -4.153846263885498,
+                "y": 2.5753846168518068,
+                "z": 7.89923095703125
+            },
+            "cameraEnd": {
+                "x": -3.5307693481445314,
+                "y": 2.409230947494507,
+                "z": 7.89923095703125
+            }
+        },
+        {
+            "name": "Roar",
+            "clip": "TRexArmature|Roar",
+            "measuredBone": "Jaw",
+            "clipSeconds": 2.5,
+            "boneRotationDegrees": 35.99999237060547,
+            "firstFrame": 180,
+            "frameCount": 60,
+            "sourceFrames": 60,
+            "anchorStart": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.1423077583312989
+            },
+            "anchorEnd": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.1423077583312989
+            },
+            "cameraStart": {
+                "x": 4.2923078536987309,
+                "y": 1.5230770111083985,
+                "z": 8.342308044433594
+            },
+            "cameraEnd": {
+                "x": 3.7661540508270265,
+                "y": 1.9800000190734864,
+                "z": 7.996153831481934
+            }
+        },
+        {
+            "name": "Orbit",
+            "clip": "TRexArmature|Walk",
+            "measuredBone": "Thigh_L",
+            "clipSeconds": 2.0,
+            "boneRotationDegrees": 69.64128875732422,
+            "firstFrame": 240,
+            "frameCount": 60,
+            "sourceFrames": 60,
+            "anchorStart": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.1423077583312989
+            },
+            "anchorEnd": {
+                "x": -1.3722782135009766,
+                "y": 0.0,
+                "z": 3.2368502616882326
+            },
+            "cameraStart": {
+                "x": 4.784293174743652,
+                "y": 3.2953848838806154,
+                "z": 5.44076681137085
+            },
+            "cameraEnd": {
+                "x": 1.1860557794570923,
+                "y": 3.6692309379577638,
+                "z": -4.482991695404053
+            }
+        }
+    ]
+}

@@ -1,20 +1,19 @@
 fileFormatVersion: 2
 guid: 56a9feeb78f21dc4598edf1e0ae913a6
 ModelImporter:
-  serializedVersion: 24300
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tree_stump_01
-    second: {fileID: 2100000, guid: 8c1096e2bf2b409408a67b503f3623f4, type: 2}
+    second: {fileID: 2100000, guid: d409e0c012170654da072c8e720757e8, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

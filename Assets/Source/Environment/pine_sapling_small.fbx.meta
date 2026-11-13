@@ -1,25 +1,24 @@
 fileFormatVersion: 2
 guid: aae1ae0335c65eb498c87a1eb7d25fab
 ModelImporter:
-  serializedVersion: 24300
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: pine_sapling_small_bark
-    second: {fileID: 2100000, guid: 22c48e6dc2cbe0f458f9467597da6935, type: 2}
+    second: {fileID: 2100000, guid: 5566ef73e67a79d468eb7fded6c441ab, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: pine_sapling_small_twig
-    second: {fileID: 2100000, guid: 650e1c9ee4234ad4ba6dec43ebd595d3, type: 2}
+    second: {fileID: 2100000, guid: 45fd6deec1c162043b1559fca6415b73, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

@@ -103,9 +103,21 @@ namespace TRexForest
 
         private static GameObject BuildModelPrefab(ModelSource model)
         {
-            var importer = AssetImporter.GetAtPath(model.fbx) as ModelImporter;
-            if (importer == null || model.materials == null || model.materials.Length == 0)
-                throw new InvalidDataException($"Missing FBX importer or material slots for {model.id} ({model.fbx}).");
+            if (model.materials == null || model.materials.Length == 0)
+                throw new InvalidDataException($"Missing material slots for {model.id} ({model.fbx}).");
+
+            // Build every surface first: texture imports refresh the AssetDatabase and would
+            // discard remaps already queued on an earlier ModelImporter instance.
+            var surfaces = new List<(string slot, Material material)>();
+            foreach (var slot in model.materials)
+            {
+                if (string.IsNullOrWhiteSpace(slot.slot))
+                    throw new InvalidDataException($"Missing FBX material slot name for {model.id}.");
+                surfaces.Add((slot.slot, BuildSurface($"{model.id}_{slot.slot}", slot)));
+            }
+
+            var importer = AssetImporter.GetAtPath(model.fbx) as ModelImporter
+                ?? throw new InvalidDataException($"Missing FBX importer for {model.id} ({model.fbx}).");
 
             bool character = model.id == "trex";
             importer.animationType = character ? ModelImporterAnimationType.Generic : ModelImporterAnimationType.None;
@@ -125,13 +137,9 @@ namespace TRexForest
             importer.materialName = ModelImporterMaterialName.BasedOnMaterialName;
 
             var expected = new HashSet<Material>();
-            foreach (var slot in model.materials)
+            foreach (var (slot, material) in surfaces)
             {
-                if (string.IsNullOrWhiteSpace(slot.slot))
-                    throw new InvalidDataException($"Missing FBX material slot name for {model.id}.");
-
-                var material = BuildSurface($"{model.id}_{slot.slot}", slot);
-                importer.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), slot.slot), material);
+                importer.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), slot), material);
                 expected.Add(material);
             }
 

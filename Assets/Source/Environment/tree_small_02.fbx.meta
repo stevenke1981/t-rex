@@ -1,30 +1,29 @@
 fileFormatVersion: 2
 guid: a7fb3ac4ad1414c459007eb36084888c
 ModelImporter:
-  serializedVersion: 24300
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tree_small_02_branches
-    second: {fileID: 2100000, guid: 3a3ab492af692cf41af36ae2c1b6afd6, type: 2}
+    second: {fileID: 2100000, guid: 524c0fe53de326a49981332e842e6c54, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tree_small_02_leaves
-    second: {fileID: 2100000, guid: 2a1cca9064204314687fe2aded207126, type: 2}
+    second: {fileID: 2100000, guid: 6955500024ae0d645b8f4b95e38a865f, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tree_small_02_trunk
-    second: {fileID: 2100000, guid: 5bcfe1512cc128740aee94850754d46c, type: 2}
+    second: {fileID: 2100000, guid: c154006e39dfa4c48b6966d3dac08450, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
