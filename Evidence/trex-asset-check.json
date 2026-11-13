@@ -1,7 +1,7 @@
 {
   "fbx": "TRex.fbx",
-  "sha256": "97de3a817658674ceb70f2bd97cc178fd16d086b05826c2efadc51e11a9b7d5d",
-  "bytes": 5454012,
+  "sha256": "4a1be6e2717a8275bb06428c145c8d6be4de43c19da5007621cacab1754dc2cc",
+  "bytes": 7709068,
   "blenderVersion": "5.2.3 LTS",
   "parts": [
     "Body",
@@ -50,7 +50,7 @@
       ],
       "seconds": 1.0,
       "probeBone": "Thigh_L",
-      "probeDegrees": 65.642
+      "probeDegrees": 66.054
     },
     "Walk": {
       "importedName": "TRexArmature|TRexArmature|Walk",
@@ -60,7 +60,7 @@
       ],
       "seconds": 2.0,
       "probeBone": "Thigh_L",
-      "probeDegrees": 40.859
+      "probeDegrees": 39.263
     }
   },
   "gaitSpeedsBlenderMetresPerSecond": {
@@ -75,7 +75,8 @@
       "lift": 0.45,
       "crouch": 0.04,
       "bob": 0.07,
-      "pitch": 2.0
+      "pitch": 2.0,
+      "heel": 18.0
     },
     "Run": {
       "period": 1.0,
@@ -84,7 +85,8 @@
       "lift": 0.8,
       "crouch": 0.22,
       "bob": 0.12,
-      "pitch": 7.0
+      "pitch": 7.0,
+      "heel": 26.0
     }
   }
 }

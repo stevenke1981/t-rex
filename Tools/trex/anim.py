@@ -9,12 +9,17 @@ import bpy
 from mathutils import Matrix, Quaternion, Vector
 
 FPS = 24
+# Dense keys preserve planted-foot positions between the 24 fps output frames.
+BAKE_SUBSTEPS = 8
 X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
+# Skin blending around the planted toes dips up to 1.7 cm below the rest sole.
+FOOT_CLEARANCE = 0.02
 
 # Gait parameters (Blender metres). speed = excursion / (duty * period).
 GAITS = {
-    "Walk": {"period": 2.0, "duty": 0.62, "excursion": 2.0, "lift": 0.45, "crouch": 0.04, "bob": 0.07, "pitch": 2.0},
-    "Run": {"period": 1.0, "duty": 0.42, "excursion": 2.5, "lift": 0.80, "crouch": 0.22, "bob": 0.12, "pitch": 7.0},
+    # A smaller walking heel roll keeps the late-stance ankle within the two-bone IK reach.
+    "Walk": {"period": 2.0, "duty": 0.62, "excursion": 2.0, "lift": 0.45, "crouch": 0.04, "bob": 0.07, "pitch": 2.0, "heel": 18.0},
+    "Run": {"period": 1.0, "duty": 0.42, "excursion": 2.5, "lift": 0.80, "crouch": 0.22, "bob": 0.12, "pitch": 7.0, "heel": 26.0},
 }
 
 
@@ -144,17 +149,19 @@ def gait_foot(rest, phase, g):
     ball0, meta0, _ = rest
     duty, e = g["duty"], g["excursion"]
     ball = ball0.copy()
+    ball.z += FOOT_CLEARANCE
     if phase < duty:
         s = phase / duty
         ball.y = ball0.y - e / 2 + e * s
-        meta = meta0 + 26 * smooth((s - 0.65) / 0.35)
+        meta = meta0 + g["heel"] * smooth((s - 0.65) / 0.35)
         toe = 0.0
     else:
         s = (phase - duty) / (1 - duty)
         ball.y = ball0.y + e / 2 - e * smooth(s)
-        ball.z = ball0.z + g["lift"] * math.sin(math.pi * s) ** 1.2
-        meta = meta0 + 26 * (1 - smooth(s * 1.4)) + 10 * math.sin(math.pi * s)
-        toe = 38 * math.sin(math.pi * min(1.0, s * 1.15))
+        ball.z += g["lift"] * math.sin(math.pi * s) ** 1.2
+        meta = meta0 + g["heel"] * (1 - smooth(s * 1.4)) + 10 * math.sin(math.pi * s)
+        # Forward is -Y, so negative X rotation lifts the toe away from the floor.
+        toe = -38 * math.sin(math.pi * min(1.0, s * 1.15))
     return ball, meta, toe
 
 
@@ -178,8 +185,8 @@ def gait_pose(rig, name, t):
     for i in range(1, 7):
         p.add(f"Tail{i}", rot(Z, amp * math.sin(w - 0.55 * i)) @ rot(X, -(0.8 if run else 0.4) * math.cos(2 * w - 0.5 * i)))
     for s, sign in (("L", 1), ("R", -1)):
-        p.add(f"UpperArm_{s}", rot(X, 10 * math.sin(2 * w + (0 if run else 1)) - (15 if run else 0)))
-        p.add(f"Forearm_{s}", rot(X, -8 * math.sin(2 * w + 0.6)))
+        p.add(f"UpperArm_{s}", rot(X, sign * 10 * math.sin(2 * w + (0 if run else 1)) - (15 if run else 0)))
+        p.add(f"Forearm_{s}", rot(X, -sign * 8 * math.sin(2 * w + 0.6)))
     return p
 
 
@@ -246,7 +253,8 @@ def bake_actions(rig):
         rig.animation_data.action = action
         frames = round(duration * FPS)
         previous = {}
-        for frame in range(frames + 1):
+        for sample in range(frames * BAKE_SUBSTEPS + 1):
+            frame = sample / BAKE_SUBSTEPS
             basis = solver.solve(builder(rig, frame / FPS))
             for bone, m in basis.items():
                 pb = rig.pose.bones[bone]
